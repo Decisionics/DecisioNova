@@ -36,8 +36,8 @@ If you find this work useful, please cite the paper below!
 
 ```bibtex
 @inproceedings{Arezoomand2024,
-   author = {Arman Arezoomand and Heather Baltzer and Fae Azhari},
-   booktitle = {IEEE Humanoids Conference 2024},
+   author = {Arezoomand, Arman and Baltzer, Heather and Azhari, Fae},
+   booktitle = {2024 IEEE-RAS 23rd International Conference on Humanoid Robots (Humanoids)},
    title = {DecisioNova: An Open-source Miniaturized Development Board for EIT-based Robotic Skins},
    year = {2024},
 }

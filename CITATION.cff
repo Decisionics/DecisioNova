@@ -6,7 +6,6 @@ title: >-
   DecisioNova: An Open-source Miniaturized Development Board
   for EIT-based Robotic Skins
 message: 'If you use this software, please cite it as below.'
-type: software
 authors:
   - given-names: Arman
     family-names: Arezoomand
@@ -24,3 +23,25 @@ authors:
     orcid: 'https://orcid.org/0000-0003-2559-8566'
 repository-code: 'https://github.com/Decisionics/DecisioNova'
 license: CC-BY-NC-SA-4.0
+preferred-citation:
+  type: conference-paper
+  authors:
+    - given-names: Arman
+      family-names: Arezoomand
+      email: rmnrmnd@gmail.com
+      orcid: 'https://orcid.org/0000-0002-0803-8156'
+      affiliation: University of Toronto
+    - given-names: Heather
+      family-names: Baltzer
+      email: heather.baltzer@uhn.ca
+      affiliation: University of Toronto
+    - given-names: Fae
+      family-names: Azhari
+      email: fae.azhari@utoronto.ca
+      affiliation: University of Toronto
+      orcid: 'https://orcid.org/0000-0003-2559-8566'
+  title: >-
+    DecisioNova: An Open-source Miniaturized Development Board
+    for EIT-based Robotic Skins
+  year: 2024
+  collection-title: "2024 IEEE-RAS 23rd International Conference on Humanoid Robots (Humanoids)"
