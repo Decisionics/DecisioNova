@@ -4,3 +4,6 @@
 [submodule "lib/TFT_eSPI"]
 	path = lib/TFT_eSPI
 	url = https://github.com/Decisionics/TFT_eSPI.git
+[submodule "lib/JPEGDecoder"]
+	path = lib/JPEGDecoder
+	url = https://github.com/Decisionics/JPEGDecoder.git
