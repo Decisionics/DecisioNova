@@ -35,10 +35,11 @@ If you find this work useful, please cite the paper below!
 (to be updated)
 
 ```bibtex
-@inproceedings{Arezoomand2024,
-   author = {Arezoomand, Arman and Baltzer, Heather and Azhari, Fae},
-   booktitle = {2024 IEEE-RAS 23rd International Conference on Humanoid Robots (Humanoids)},
-   title = {DecisioNova: An Open-source Miniaturized Development Board for EIT-based Robotic Skins},
-   year = {2024},
-}
+@INPROCEEDINGS{Arezoomand2024,
+  author={Arezoomand, Arman and Baltzer, Heather and Azhari, Fae},
+  booktitle={2024 IEEE-RAS 23rd International Conference on Humanoid Robots (Humanoids)}, 
+  title={DecisioNova: An Open-source Miniaturized Development Board for EIT-based Robotic Skins}, 
+  year={2024},
+  pages={858-865},
+  doi={10.1109/Humanoids58906.2024.10769959}}
 ```

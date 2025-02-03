@@ -40,8 +40,11 @@ preferred-citation:
       email: fae.azhari@utoronto.ca
       affiliation: University of Toronto
       orcid: 'https://orcid.org/0000-0003-2559-8566'
+  doi: "10.1109/Humanoids58906.2024.10769959"
   title: >-
     DecisioNova: An Open-source Miniaturized Development Board
     for EIT-based Robotic Skins
   year: 2024
   collection-title: "2024 IEEE-RAS 23rd International Conference on Humanoid Robots (Humanoids)"
+  start: 858
+  end: 865
