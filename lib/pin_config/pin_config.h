@@ -45,7 +45,8 @@
 
 #define AD_RST_PIN 1
 #define AD_INT_PIN 2
-#define AD_TRG_PIN 3
+#define AD_TRG0_PIN 3
+#define AD_TRG2_PIN 15
 
 #define PUSH_BUTTON 4
 

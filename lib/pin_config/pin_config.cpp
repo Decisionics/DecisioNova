@@ -90,8 +90,11 @@ uint32_t AD5940_MCUResourceInit(void *pCfg)
   pinMode(AD_RST_PIN, OUTPUT);
   pinMode(AD_INT_PIN, INPUT);
 
-  pinMode(AD_TRG_PIN, OUTPUT);
-  digitalWrite(AD_TRG_PIN, HIGH);
+  pinMode(AD_TRG0_PIN, OUTPUT);
+  digitalWrite(AD_TRG0_PIN, HIGH);
+  
+  pinMode(AD_TRG2_PIN, OUTPUT);
+  digitalWrite(AD_TRG2_PIN, HIGH);
 
   attachInterrupt(AD_INT_PIN, Ext_Int0_Handler, FALLING);
   AD5940_CsSet();

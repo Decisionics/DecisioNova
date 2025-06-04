@@ -24,4 +24,4 @@
 #include <ad5940.h>
 
 int32_t AD5940_AFEResourceInit();
-float DataProcess(int32_t *const pData);
+void DataProcess(int32_t *const pData, char *pOutputBuffer);

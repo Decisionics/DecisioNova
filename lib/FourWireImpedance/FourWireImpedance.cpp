@@ -47,7 +47,7 @@ int32_t AD5940_AFEResourceInit(void)
   fifo_cfg.FIFOMode = FIFOMODE_FIFO;
   fifo_cfg.FIFOSize = FIFOSIZE_4KB;
   fifo_cfg.FIFOSrc = FIFOSRC_DFT;
-  fifo_cfg.FIFOThresh = 4;
+  fifo_cfg.FIFOThresh = 34;
   AD5940_FIFOCfg(&fifo_cfg);
 
   // start FIFO
@@ -62,8 +62,8 @@ int32_t AD5940_AFEResourceInit(void)
   // init GPIO
   AGPIOCfg_Type gpio_cfg;
   gpio_cfg.FuncSet = GP6_SYNC | GP5_SYNC | GP4_SYNC | GP2_TRIG | GP1_SYNC | GP0_TRIG;
-  gpio_cfg.InputEnSet = AGPIO_Pin2;
-  gpio_cfg.OutputEnSet = AGPIO_Pin0 | AGPIO_Pin1 | AGPIO_Pin4 | AGPIO_Pin5 | AGPIO_Pin6;
+  gpio_cfg.InputEnSet = 0;
+  gpio_cfg.OutputEnSet = AGPIO_Pin0 | AGPIO_Pin1 | AGPIO_Pin2 | AGPIO_Pin4 | AGPIO_Pin5 | AGPIO_Pin6;
   gpio_cfg.OutVal = 0;
   gpio_cfg.PullEnSet = 0;
   AD5940_AGPIOCfg(&gpio_cfg);
@@ -73,7 +73,7 @@ int32_t AD5940_AFEResourceInit(void)
   // init sequencer trig
   SeqGpioTrig_Cfg seqgpiotrig_cfg;
   seqgpiotrig_cfg.bEnable = bTRUE;
-  seqgpiotrig_cfg.PinSel = AGPIO_Pin0;
+  seqgpiotrig_cfg.PinSel = AGPIO_Pin0 | AGPIO_Pin2;
   seqgpiotrig_cfg.SeqPinTrigMode = SEQPINTRIGMODE_FALLING;
   AD5940_SEQGpioTrigCfg(&seqgpiotrig_cfg);
 
@@ -113,7 +113,7 @@ int32_t AD5940_AFEResourceInit(void)
   fifo_cfg.FIFOMode = FIFOMODE_FIFO;
   fifo_cfg.FIFOSize = FIFOSIZE_4KB; 
   fifo_cfg.FIFOSrc = FIFOSRC_DFT;
-  fifo_cfg.FIFOThresh = 4; 
+  fifo_cfg.FIFOThresh = 34; 
   AD5940_FIFOCfg(&fifo_cfg);
 
   // clear interupts
@@ -252,6 +252,8 @@ int32_t AD5940_AFEResourceInit(void)
   clks_cal.RatioSys2AdcClk = 1.0;
   AD5940_ClksCalculate(&clks_cal, &WaitClks);
 
+  // Sequence 0 start
+
   // trigger sequence generator
   AD5940_SEQGenCtrl(bTRUE);
 
@@ -260,6 +262,56 @@ int32_t AD5940_AFEResourceInit(void)
 
   // configure the switch matrix
   SWMatrixCfg_Type sw_cfg;
+  sw_cfg.Dswitch = SWD_CE0;
+  sw_cfg.Pswitch = SWP_CE0;
+  sw_cfg.Nswitch = SWP_AIN1;
+  sw_cfg.Tswitch = SWT_AIN1 | SWT_TRTIA;
+  AD5940_SWMatrixCfgS(&sw_cfg);
+
+  // connect ADC to sense probes to measure voltage
+  AD5940_ADCMuxCfgS(ADCMUXP_AIN3, ADCMUXN_AIN2);
+  AD5940_AFECtrlS(AFECTRL_WG | AFECTRL_ADCPWR, bTRUE);
+  AD5940_SEQGenInsert(SEQ_WAIT(50));
+  AD5940_AFECtrlS(AFECTRL_ADCCNV | AFECTRL_DFT, bTRUE);
+  AD5940_SEQGenInsert(SEQ_WAIT(WaitClks));
+  AD5940_AFECtrlS(AFECTRL_ADCCNV | AFECTRL_DFT | AFECTRL_WG | AFECTRL_ADCPWR, bFALSE);
+
+  AD5940_SEQGpioCtrlS(0);
+
+  // ending sequence
+  error = AD5940_SEQGenFetchSeq(&pSeqCmd, &SeqLen);
+  AD5940_SEQGenCtrl(bFALSE);
+  AD5940_SEQCycleTime();
+
+  if (error != AD5940ERR_OK)
+  {
+    while (1)
+    {
+      Serial.println("AFE error: Seq 0 initiation failed!");
+    }
+  }
+
+  SEQInfo_Type Seq0Info;
+
+  Seq0Info.SeqId = SEQID_0;
+  Seq0Info.SeqRamAddr = Seq1Info.SeqRamAddr + Seq1Info.SeqLen;
+  Seq0Info.pSeqCmd = pSeqCmd;
+  Seq0Info.SeqLen = SeqLen;
+  // writing the sequence
+  AD5940_SEQCmdWrite(Seq0Info.SeqRamAddr, pSeqCmd, SeqLen);
+
+  // sequence 0 end
+
+  // Sequence 2 start
+
+  // trigger sequence generator
+  AD5940_SEQGenCtrl(bTRUE);
+
+  // clear the interupt pin to MCU
+  AD5940_SEQGpioCtrlS(AGPIO_Pin6 | AGPIO_Pin1);
+
+  // configure the switch matrix
+  //SWMatrixCfg_Type sw_cfg;
   sw_cfg.Dswitch = SWD_CE0;
   sw_cfg.Pswitch = SWP_CE0;
   sw_cfg.Nswitch = SWP_AIN1;
@@ -297,14 +349,16 @@ int32_t AD5940_AFEResourceInit(void)
     }
   }
 
-  SEQInfo_Type Seq0Info;
+  SEQInfo_Type Seq2Info;
 
-  Seq0Info.SeqId = SEQID_0;
-  Seq0Info.SeqRamAddr = Seq1Info.SeqRamAddr + Seq1Info.SeqLen;
-  Seq0Info.pSeqCmd = pSeqCmd;
-  Seq0Info.SeqLen = SeqLen;
+  Seq2Info.SeqId = SEQID_2;
+  Seq2Info.SeqRamAddr = Seq0Info.SeqRamAddr + Seq0Info.SeqLen;
+  Seq2Info.pSeqCmd = pSeqCmd;
+  Seq2Info.SeqLen = SeqLen;
   // writing the sequence
-  AD5940_SEQCmdWrite(Seq0Info.SeqRamAddr, pSeqCmd, SeqLen);
+  AD5940_SEQCmdWrite(Seq2Info.SeqRamAddr, pSeqCmd, SeqLen);
+
+  // sequence 2 end
 
   // updating sequence 1 info
   Seq1Info.WriteSRAM = bFALSE;
@@ -317,6 +371,13 @@ int32_t AD5940_AFEResourceInit(void)
   // updating sequence 0 info
   Seq0Info.WriteSRAM = bFALSE;
   AD5940_SEQInfoCfg(&Seq0Info);
+  seq_cfg.SeqEnable = bTRUE;
+  AD5940_SEQCfg(&seq_cfg); // engaging sequencer trigger
+  AD5940_ClrMCUIntFlag();  // clearing AFE interupts
+
+  // updating sequence 2 info
+  Seq2Info.WriteSRAM = bFALSE;
+  AD5940_SEQInfoCfg(&Seq2Info);
   seq_cfg.SeqEnable = bTRUE;
   AD5940_SEQCfg(&seq_cfg); // engaging sequencer trigger
   AD5940_ClrMCUIntFlag();  // clearing AFE interupts
@@ -344,13 +405,15 @@ float q_rsqrt(float number)
   return y;
 }
 
-float DataProcess(int32_t *const data)
+void DataProcess(int32_t *const data, char *pOutputBuffer)
 {
   iImpCar_Type *pSrcData = (iImpCar_Type *)data;
+  char temp[16];
+  pOutputBuffer[0] = '\0';
 
   // convert DFT output to int32_t
   // data is 18bit in two's complement
-  for (int i = 0; i < 4; i++)
+  for (int i = 0; i < 28; i++)
   {
     data[i] &= 0x3ffff;
     if (data[i] & (1 << 17)) // sign bit
@@ -362,20 +425,28 @@ float DataProcess(int32_t *const data)
   iImpCar_Type DftVolt, DftCurr;
 
   DftCurr = pSrcData[0];
-  DftVolt = pSrcData[1];
   float VoltMag;
   float CurrMag;
   //float VoltPhase;
   //float CurrPhase;
-
-  VoltMag = sqrt((float)DftVolt.Real * DftVolt.Real + (float)DftVolt.Image * DftVolt.Image);
+  
   // VoltPhase = atan2(-pDftVolt->Image,pDftVolt->Real);
-
-  CurrMag = q_rsqrt((float)DftCurr.Real * DftCurr.Real + (float)DftCurr.Image * DftCurr.Image);
+  
+  CurrMag = q_rsqrt((float)DftCurr.Real * DftCurr.Real + (float)DftCurr.Image * DftCurr.Image) * RtiaCalValue[0];
   // CurrPhase = atan2(-pDftCurr->Image,pDftCurr->Real);
-
+  
   // ImpMag = VoltMag * CurrMag * RtiaCalValue[0];
   // ImpPhase = VoltPhase - CurrPhase + RtiaCalValue[1];
+  
+  for(int i=1; i<14; i++)
+  {
+    DftVolt = pSrcData[i];
+    VoltMag = sqrt((float)DftVolt.Real * DftVolt.Real + (float)DftVolt.Image * DftVolt.Image);
 
-  return VoltMag * CurrMag * RtiaCalValue[0];
+    // Convert float to string with 2 decimal places
+    snprintf(temp, sizeof(temp), "%.2f", VoltMag * CurrMag);
+
+    strcat(pOutputBuffer, temp);      // Append the float string
+    strcat(pOutputBuffer, ",");       // Add  delimiter
+  }
 }

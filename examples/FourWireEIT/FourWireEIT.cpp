@@ -30,6 +30,7 @@
 
 #define BUFFER_SIZE 256
 uint32_t buffer[BUFFER_SIZE];
+char charBuffer[BUFFER_SIZE];
 
 void setup()
 {
@@ -48,26 +49,28 @@ void loop()
 {
   for (int i = 0; i < 16; i++)
   {
-    for (int j = 0; j < 13; j++)
+    set_mux(i, i + 1, i + 2 + 0, i + 3 + 0); //Select current injection pins
+
+    delayMicroseconds(100);
+    digitalWrite(AD_TRG2_PIN, LOW); // trigger the current measurement + first voltage measurement
+    while (AD5940_GetMCUIntFlag() == 0){} // wait for data ready interrupt
+    digitalWrite(AD_TRG2_PIN, HIGH); // clear trigger pin
+    AD5940_ClrMCUIntFlag(); // clear interupts
+
+    for (int j = 1; j < 13; j++)
     {
-      set_mux(i, i + 1, i + 2 + j, i + 3 + j);
+      set_mux(i, i + 1, i + 2 + j, i + 3 + j); //swithcing sense pins
+
       delayMicroseconds(100);
-
-      digitalWrite(AD_TRG_PIN, LOW); // trigger the impedance measurement
-
-      while (AD5940_GetMCUIntFlag() == 0)
-      {} // wait for data ready interrupt
-
-      digitalWrite(AD_TRG_PIN, HIGH); // clear trigger pin
-
+      digitalWrite(AD_TRG0_PIN, LOW); // trigger the voltage measurement
+      while (AD5940_GetMCUIntFlag() == 0){} // wait for data ready interrupt
+      digitalWrite(AD_TRG0_PIN, HIGH); // clear trigger pin
       AD5940_ClrMCUIntFlag(); // clear interupts
-
-      AD5940_FIFORd((uint32_t *)buffer, 4);
-      Serial.print(DataProcess((int32_t *)buffer));
-
-      if (!(i == 15 && j == 12))
-        Serial.print(",");
     }
+    AD5940_FIFORd((uint32_t *)buffer, 28); //28 = 2 (current value) + 2*13 (voltage values)
+    DataProcess((int32_t *)buffer, charBuffer);
+    if(i == 15)
+      charBuffer[strlen(charBuffer) - 1] = '\n';
+    Serial.write(charBuffer);
   }
-  Serial.println("");
 }
